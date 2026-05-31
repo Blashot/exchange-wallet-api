@@ -6,6 +6,7 @@ using Hangfire;
 using Hangfire.PostgreSql;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
+using Infrastructure.BackgroundJobs;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
 using Infrastructure.Nbp;
@@ -34,6 +35,22 @@ public static class DependencyInjection
             .AddHealthChecks(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
+    
+    public static void UseRecurringJobs(
+        this IServiceProvider serviceProvider,
+        IConfiguration configuration)
+    {
+        string cronExpression =
+            configuration["Hangfire:ImportExchangeRatesCron"] ?? Cron.Daily();
+
+        IRecurringJobManager manager = serviceProvider.GetRequiredService<IRecurringJobManager>();
+
+        manager.AddOrUpdate<ImportExchangeRatesJob>(
+            "import-nbp-exchange-rates",
+            job => job.ExecuteAsync(),
+            cronExpression,
+            new RecurringJobOptions { TimeZone = TimeZoneInfo.Utc });
+    }
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
