@@ -1,4 +1,5 @@
 ﻿using Application.Abstractions.Data;
+using Domain.ExchangeRates;
 using Domain.Users;
 using Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,9 @@ public sealed class ApplicationDbContext(
     : DbContext(options), IApplicationDbContext
 {
     public DbSet<User> Users { get; set; }
+    
+    // ExchangeRates
+    public DbSet<ExchangeRateTable> ExchangeRateTables { get; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
