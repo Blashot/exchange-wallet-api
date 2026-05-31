@@ -2,6 +2,7 @@
 using Domain.Wallets;
 using Domain.Wallets.Entities;
 using Domain.Wallets.Enums;
+using Domain.Wallets.Events;
 using SharedKernel;
 
 namespace Domain.UnitTests.Wallets;
@@ -107,6 +108,22 @@ public sealed class WalletDepositTests
         wallet.Balances.Count.ShouldBe(2);
         wallet.Balances.Single(b => b.CurrencyCode == CurrencyCode.PLN).Amount.ShouldBe(200m);
         wallet.Balances.Single(b => b.CurrencyCode == usd).Amount.ShouldBe(50m);
+    }
+    
+    [Fact]
+    public void Deposit_ShouldRaiseMoneyDepositedDomainEvent()
+    {
+        Wallet wallet = CreateWallet();
+        wallet.ClearDomainEvents();
+
+        wallet.Deposit(CurrencyCode.PLN, 75m, Now);
+
+        MoneyDepositedDomainEvent evt = wallet.DomainEvents
+            .OfType<MoneyDepositedDomainEvent>()
+            .ShouldHaveSingleItem();
+        evt.WalletId.ShouldBe(wallet.Id);
+        evt.Currency.ShouldBe(CurrencyCode.PLN);
+        evt.Amount.ShouldBe(75m);
     }
 }
 

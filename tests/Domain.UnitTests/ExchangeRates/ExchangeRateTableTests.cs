@@ -1,4 +1,5 @@
 ﻿using Domain.ExchangeRates;
+using Domain.ExchangeRates.Events;
 using Domain.Shared;
 using SharedKernel;
 
@@ -119,5 +120,14 @@ public sealed class ExchangeRateTableTests
         decimal received = Math.Round(100m * usdRate / eurRate, 8, MidpointRounding.AwayFromZero);
 
         received.ShouldBe(Math.Round(400m / 4.50m, 8, MidpointRounding.AwayFromZero));
+    }
+    
+    [Fact]
+    public void Create_ShouldRaiseExchangeRateTableImportedDomainEvent()
+    {
+        ExchangeRateTable table = CreateTable((Usd, 4.00m));
+
+        table.DomainEvents.ShouldHaveSingleItem()
+            .ShouldBeOfType<ExchangeRateTableImportedDomainEvent>();
     }
 }
