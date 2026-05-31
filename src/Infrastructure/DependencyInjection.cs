@@ -1,10 +1,12 @@
 ﻿using System.Text;
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
+using Application.Abstractions.ExchangeRates;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
+using Infrastructure.Nbp;
 using Infrastructure.Time;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -25,6 +27,7 @@ public static class DependencyInjection
         services
             .AddServices()
             .AddDatabase(configuration)
+            .AddNbpClient(configuration)
             .AddHealthChecks(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
@@ -49,6 +52,22 @@ public static class DependencyInjection
                 .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+        return services;
+    }
+    private static IServiceCollection AddNbpClient(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        string baseUrl = configuration.GetRequiredSection("Nbp:BaseUrl").Value!;
+
+        services
+            .AddHttpClient<INbpClient, NbpClient>(client =>
+            {
+                client.BaseAddress = new Uri(baseUrl);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
 
         return services;
     }
