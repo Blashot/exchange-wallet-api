@@ -32,4 +32,20 @@ public sealed class WalletBalance : Entity
             Amount = 0m
         };
     }
+    
+    internal void Add(decimal amount)
+    {
+        Amount += amount;
+    }
+    
+    internal bool TrySubtract(decimal amount)
+    {
+        if (Amount < amount)
+        {
+            return false;
+        }
+
+        Amount -= amount;
+        return true;
+    }
 }

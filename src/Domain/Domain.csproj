@@ -5,10 +5,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ExchangeRates\Events\" />
     <Folder Include="ExchangeRates\Services\" />
     <Folder Include="ExchangeRates\ValueObjects\" />
-    <Folder Include="Wallets\Events\" />
     <Folder Include="Wallets\Services\" />
   </ItemGroup>
 

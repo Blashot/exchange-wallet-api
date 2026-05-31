@@ -1,6 +1,7 @@
 ﻿using Domain.Shared;
 using Domain.Wallets.Entities;
 using Domain.Wallets.Enums;
+using Domain.Wallets.Events;
 using SharedKernel;
 
 namespace Domain.Wallets;
@@ -44,9 +45,63 @@ public sealed class Wallet : Entity
             Version = Guid.NewGuid()
         };
         
-        //TODO: Raise domain event after the wallet has been created.
-
+        wallet.Raise(new WalletCreatedDomainEvent(wallet.Id));
+        
         return Result.Success(wallet);
+    }
+    
+    public Result Deposit(CurrencyCode currency, decimal amount, DateTime occurredAt)
+    {
+        if (amount <= 0m)
+        {
+            return Result.Failure(WalletErrors.InvalidAmount);
+        }
+
+        WalletBalance balance = GetOrCreateBalance(currency);
+        balance.Add(amount);
+
+        _transactions.Add(
+            WalletTransaction.Create(Id, TransactionType.Deposit, currency, amount, occurredAt));
+
+        Raise(new MoneyDepositedDomainEvent(Id, currency, amount));
+
+        return Result.Success();
+    }
+    
+    public Result Withdraw(CurrencyCode currency, decimal amount, DateTime occurredAt)
+    {
+        if (amount <= 0m)
+        {
+            return Result.Failure(WalletErrors.InvalidAmount);
+        }
+
+        WalletBalance? balance = _balances.SingleOrDefault(b => b.CurrencyCode == currency);
+
+        if (balance is null || !balance.TrySubtract(amount))
+        {
+            return Result.Failure(WalletErrors.InsufficientFunds);
+        }
+
+        _transactions.Add(
+            WalletTransaction.Create(Id, TransactionType.Withdrawal, currency, amount, occurredAt));
+
+        Raise(new MoneyWithdrawnDomainEvent(Id, currency, amount));
+
+        return Result.Success();
+    }
+    
+    
+    private WalletBalance GetOrCreateBalance(CurrencyCode currency)
+    {
+        WalletBalance? balance = _balances.SingleOrDefault(b => b.CurrencyCode == currency);
+
+        if (balance is null)
+        {
+            balance = WalletBalance.Create(Id, currency);
+            _balances.Add(balance);
+        }
+
+        return balance;
     }
     
 }

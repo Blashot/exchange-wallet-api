@@ -1,4 +1,5 @@
 ﻿using Domain.ExchangeRates.Entities;
+using Domain.ExchangeRates.Events;
 using Domain.Shared;
 using SharedKernel;
 
@@ -45,7 +46,7 @@ public sealed class ExchangeRateTable : Entity
             table._rates.Add(ExchangeRate.Create(table.Id, code, name, midRate));
         }
 
-        //TODO: Raise domain event after the table and its rates have been created.
+        table.Raise(new ExchangeRateTableImportedDomainEvent(table.Id, publicationDate));
 
         return table;
     }
