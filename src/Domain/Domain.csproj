@@ -4,4 +4,10 @@
     <ProjectReference Include="..\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ExchangeRates\Events\" />
+    <Folder Include="ExchangeRates\Services\" />
+    <Folder Include="ExchangeRates\ValueObjects\" />
+  </ItemGroup>
+
 </Project>
