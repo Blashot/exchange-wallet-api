@@ -91,6 +91,54 @@ public sealed class Wallet : Entity
     }
     
     
+    public Result Convert(
+        CurrencyCode fromCurrency,
+        CurrencyCode toCurrency,
+        decimal fromAmount,
+        decimal fromMidRate,
+        decimal toMidRate,
+        DateTime occurredAt)
+    {
+        if (fromCurrency == toCurrency)
+        {
+            return Result.Failure(WalletErrors.SameCurrency);
+        }
+
+        if (fromAmount <= 0m)
+        {
+            return Result.Failure(WalletErrors.InvalidAmount);
+        }
+
+        //fromCurrency → PLN (PLN per 1 unit)
+        decimal plnEquivalent = fromAmount * fromMidRate;
+
+        //PLN → toCurrency (PLN per 1 unit of target)
+        decimal toAmount = Math.Round(plnEquivalent / toMidRate, 8, MidpointRounding.AwayFromZero);
+
+        // Debit the source balance
+        WalletBalance? sourceBalance = _balances.SingleOrDefault(b => b.CurrencyCode == fromCurrency);
+
+        if (sourceBalance is null || !sourceBalance.TrySubtract(fromAmount))
+        {
+            return Result.Failure(WalletErrors.InsufficientFunds);
+        }
+
+        // Credit the target balance
+        WalletBalance targetBalance = GetOrCreateBalance(toCurrency);
+        targetBalance.Add(toAmount);
+
+        // Record both in transaction ledger.
+        _transactions.Add(
+            WalletTransaction.Create(Id, TransactionType.ConversionDebit, fromCurrency, fromAmount, occurredAt));
+
+        _transactions.Add(
+            WalletTransaction.Create(Id, TransactionType.ConversionCredit, toCurrency, toAmount, occurredAt));
+
+        Raise(new CurrencyConvertedDomainEvent(Id, fromCurrency, fromAmount, toCurrency, toAmount));
+
+        return Result.Success();
+    }
+    
     private WalletBalance GetOrCreateBalance(CurrencyCode currency)
     {
         WalletBalance? balance = _balances.SingleOrDefault(b => b.CurrencyCode == currency);
