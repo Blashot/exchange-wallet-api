@@ -5,19 +5,22 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 env:
-  DOTNET_VERSION: "10.x"
+  DOTNET_VERSION: "10.0.x"
+  CONFIGURATION: Release
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -25,10 +28,16 @@ jobs:
         run: dotnet restore ExchangeWalletApi.slnx
 
       - name: Build
-        run: dotnet build ExchangeWalletApi.slnx --configuration Release --no-restore
+        run: dotnet build ExchangeWalletApi.slnx --configuration ${{ env.CONFIGURATION }} --no-restore
 
-      - name: Test
-        run: dotnet test ExchangeWalletApi.slnx --configuration Release --no-restore --no-build
+      - name: Test Domain
+        run: dotnet test tests/Domain.UnitTests/Domain.UnitTests.csproj --configuration ${{ env.CONFIGURATION }} --no-build
 
-      - name: Publish
-        run: dotnet publish ExchangeWalletApi.slnx --configuration Release --no-restore --no-build
+      - name: Test Application
+        run: dotnet test tests/Application.UnitTests/Application.UnitTests.csproj --configuration ${{ env.CONFIGURATION }} --no-build
+
+      - name: Test Infrastructure Integration
+        run: dotnet test tests/Infrastructure.IntegrationTests/Infrastructure.IntegrationTests.csproj --configuration ${{ env.CONFIGURATION }} --no-build
+
+      - name: Test Architecture
+        run: dotnet test tests/ArchitectureTests/ArchitectureTests.csproj --configuration ${{ env.CONFIGURATION }} --no-build
