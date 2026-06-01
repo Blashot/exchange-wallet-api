@@ -1,6 +1,9 @@
 ﻿using Application.Abstractions.Data;
 using Domain.ExchangeRates;
+using Domain.ExchangeRates.Entities;
 using Domain.Users;
+using Domain.Wallets;
+using Domain.Wallets.Entities;
 using Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
@@ -16,6 +19,13 @@ public sealed class ApplicationDbContext(
     
     // ExchangeRates
     public DbSet<ExchangeRateTable> ExchangeRateTables { get; }
+    public DbSet<ExchangeRate> ExchangeRates { get; set; }
+
+    
+    // Wallets
+    public DbSet<Wallet> Wallets { get; set; }
+    public DbSet<WalletBalance> WalletBalances { get; set; }
+    public DbSet<WalletTransaction> WalletTransactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="ExchangeRates\" />
+    <Folder Include="Wallets\Commands\" />
   </ItemGroup>
 
 </Project>
