@@ -18,7 +18,7 @@ public sealed class ApplicationDbContext(
     public DbSet<User> Users { get; set; }
     
     // ExchangeRates
-    public DbSet<ExchangeRateTable> ExchangeRateTables { get; }
+    public DbSet<ExchangeRateTable> ExchangeRateTables { get; set; }
     public DbSet<ExchangeRate> ExchangeRates { get; set; }
 
     
