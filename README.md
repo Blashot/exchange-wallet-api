@@ -1,7 +1,6 @@
 # Exchange Wallet API
 
-[![Build](https://github.com/<owner>/<repo>/actions/workflows/build.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/build.yml)
-
+[![CI](https://github.com/Blashot/exchange-wallet-api/actions/workflows/build.yml/badge.svg)](https://github.com/Blashot/exchange-wallet-api/actions/workflows/build.yml)
 
 A .NET Web API that imports NBP Table B exchange rates and provides a wallet system supporting deposits, withdrawals, and currency conversion.
 
