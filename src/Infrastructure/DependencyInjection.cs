@@ -108,7 +108,8 @@ public static class DependencyInjection
                     SchemaName = "hangfire",
                     PrepareSchemaIfNecessary = true
                 }));
-
+        services.AddHangfireServer();
+        
         return services;
     }
 
