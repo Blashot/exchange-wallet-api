@@ -1,30 +1,49 @@
 services:
   web-api:
     image: ${DOCKER_REGISTRY-}webapi
-    container_name: web-api
+    container_name: exchange-wallet-api
     build:
       context: .
       dockerfile: src/Web.Api/Dockerfile
     ports:
-      - 5000:8080
-      - 5001:8081
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__Database: "Host=${DB_HOST};Port=${DB_PORT};Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD};Include Error Detail=true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      seq:
+        condition: service_started
+    restart: on-failure
 
   postgres:
     image: postgres:17
-    container_name: postgres
+    container_name: exchange-wallet-postgres
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./.containers/db:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
 
   seq:
     image: datalust/seq:2024.3
-    container_name: seq
+    container_name: exchange-wallet-seq
     environment:
-      - ACCEPT_EULA=Y
+      ACCEPT_EULA: Y
+    volumes:
+      - ./.containers/seq:/data
     ports:
-      - 8081:80
+      - "8081:80"
+    restart: unless-stopped
